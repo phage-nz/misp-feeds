@@ -6,7 +6,6 @@ from pymisp import PyMISP
 from urllib.parse import urlparse
 
 import coloredlogs
-import config
 import importlib
 import logging
 import os
@@ -26,10 +25,10 @@ def is_valid_domain(domain):
     return validators.domain(domain)
 
 def is_valid_url(url):
-    if any(s in url for s in config.URL_BLACKLIST):
+    if any(s in url for s in URL_BLACKLIST):
         return False
 
-    if any(s in url for s in config.IP_BLACKLIST):
+    if any(s in url for s in IP_BLACKLIST):
         return False
 
     if url.endswith('\u2026'):
@@ -50,12 +49,15 @@ def is_valid_url(url):
     return False
 
 def is_valid_ip(ip):
-    if any(s in ip for s in config.IP_BLACKLIST):
+    if any(s in ip for s in IP_BLACKLIST):
         return False
 
     return validators.ipv4(ip)
 
 def get_tags(misp, term, mode='contains'):
+    if term.lower() in TAG_BLACKLIST or len(term) < TAG_MIN_LENGTH:
+        return []
+
     tags = [x.name for x in misp.tags(pythonify=True) if 'misp-galaxy' in x.name]
 
     if mode == 'endswith':

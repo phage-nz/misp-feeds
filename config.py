@@ -23,4 +23,5 @@ WHITELIST_FILE = 'whitelist.txt'
 IP_BLACKLIST = ['0.0.0.0', '127.0.0.1', '127.0.1.1', '192.168.1.']
 URL_BLACKLIST = ['//t.co/', 'abuse.ch', 'app.any.run', 'capesandbox.com', 'otx.alienvault.com', 'proofpoint.com', 'tria.ge', 'twitter.com', 'virustotal.com', 'www.cloudflare.com']
 SAMPLE_BLACKLIST = ['arm','bashlite','elf','gafgyt','mirai','mozi','script']
-TAG_BLACKLIST = ['32','exe','dll','dfir','doc','encrypted','excel','hta','isc','iso','malware','msi','microsoft','n/a','none','pe','phishing','ransomware','rtf','script','threat','trojan','xls']
+TAG_BLACKLIST = ['32','a','exe','dll','dfir','doc','encrypted','excel','hta','isc','iso','malware','msi','microsoft','n/a','none','pe','phishing','ransomware','rtf','script','threat','trojan','xls']
+TAG_MIN_LENGTH = 3
