@@ -28,12 +28,13 @@ PLUGIN_NAME = 'X-Force'
 PLUGIN_ENABLED = True
 PLUGIN_TIMES = ['06:00', '14:00', '22:00']
 
-XFORCE_API_KEY = 'YOUR XFORCE API KEY'
-XFORCE_API_PASSWORD = 'YOUR XFORCE API PASSWORD'
+XFORCE_API_KEY = 'YOUR API KEY'
+XFORCE_API_PASSWORD = 'YOUR API PASSWORD'
 XFORCE_LINK_IGNORE = ['ibm.com', 'ibmcloud.com', 'xforce-security.com']
 
 MISP_TO_IDS = False
-MISP_PUBLISH_EVENTS = False
+MISP_PUBLISH_EVENTS = True
+MISP_DISTRIBUTION = Distribution.connected_communities
 
 HOURS_TO_CHECK = 9
 ATTRIBUTE_PROGRESS = True
@@ -87,7 +88,7 @@ def make_new_event(misp, stix_package):
 
     event.info = title
     event.analysis = Analysis.completed
-    event.distribution = Distribution.your_organisation_only
+    event.distribution = MISP_DISTRIBUTION
     event.threat_level_id = ThreatLevel.low
     event.add_tag('xforce-author:{0}'.format(author))
 
@@ -192,6 +193,12 @@ def process_cases(misp, case_list):
 
         if event:
             LOGGER.warning('Event already exists. Will only update attributes.')
+
+            if MISP_PUBLISH_EVENTS:
+                LOGGER.info('Reapplying distribution policy for event update...')
+                event['timestamp'] = int(time.time())
+                event['distribution'] = MISP_DISTRIBUTION
+                updated_event = misp.update_event(event, event_id=event['id'], metadata=True)
 
         else:
             event = make_new_event(misp, stix_package)

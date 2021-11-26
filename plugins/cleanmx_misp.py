@@ -24,9 +24,10 @@ PLUGIN_TIMES = ['08:00', '12:00', '16:00', '20:00', '00:00', '04:00']
 
 MISP_EVENT_TITLE = 'CleanMX indicator feed'
 MISP_TO_IDS = False
-MISP_PUBLISH_EVENTS = False
+MISP_PUBLISH_EVENTS = True
+MISP_DISTRIBUTION = Distribution.connected_communities
 
-CLEANMX_AGENT = 'YOUR CLEANMX USER AGENT'
+CLEANMX_AGENT = 'YOUR USER AGENT'
 
 PHISHING_URL = 'http://support.clean-mx.de/clean-mx/xmlphishing?response=alive&format=json&domain='
 VIRUS_URL = 'http://support.clean-mx.de/clean-mx/xmlviruses?response=alive&format=json&domain='
@@ -54,7 +55,7 @@ def make_new_event(misp):
 
     event.info = event_title
     event.analysis = Analysis.completed
-    event.distribution = Distribution.your_organisation_only
+    event.distribution = MISP_DISTRIBUTION
     event.threat_level_id = ThreatLevel.low
 
     event.add_tag('Clean MX')
@@ -176,6 +177,12 @@ def process_indicators(misp, indicator_list):
 
     if event:
         LOGGER.warning('Event already exists!')
+
+        if MISP_PUBLISH_EVENTS:
+            LOGGER.info('Reapplying distribution policy for event update...')
+            event['timestamp'] = int(time.time())
+            event['distribution'] = MISP_DISTRIBUTION
+            updated_event = misp.update_event(event, event_id=event['id'], metadata=True)
 
     else:
         event = make_new_event(misp)

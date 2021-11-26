@@ -30,12 +30,13 @@ PLUGIN_TIMES = ['06:00', '12:00', '18:00', '00:00']
 
 MISP_EVENT_TITLE = 'Twitter indicator feed'
 MISP_TO_IDS = False
-MISP_PUBLISH_EVENTS = False
+MISP_PUBLISH_EVENTS = True
+MISP_DISTRIBUTION = Distribution.connected_communities
 
-CONSUMER_KEY = 'YOUR TWITTER CONSUMER KEY'
-CONSUMER_SECRET = 'YOUR TWITTER CONSUMER SECRET'
-ACCESS_TOKEN = 'YOUR TWITTER ACCESS TOKEN'
-ACCESS_TOKEN_SECRET = 'YOUR TWITTER TOKEN SECRET'
+CONSUMER_KEY = 'YOUR CONSUMER KEY'
+CONSUMER_SECRET = 'YOUR CONSUMER SECRET'
+ACCESS_TOKEN = 'YOUR ACCESS TOKEN'
+ACCESS_TOKEN_SECRET = 'YOUR ACCESS TOKEN SECRET'
 
 HOURS_BACK =  7
 ATTRIBUTE_PROGRESS = True
@@ -45,8 +46,8 @@ WAIT_SECONDS = 10
 THROTTLE_REQUESTS = True
 INCLUDE_DOMAINS = False
 
-USERNAME_LIST = ['abuse_ch','avman1995','bad_packets','Bank_Security','cobaltstrikebot','Cryptolaemus1','dubstard','executemalware','FewAtoms','ffforward','James_inthe_box','JAMESWT_MHT','Jan0fficial','JCyberSec_','JRoosen','pollo290987','ps66uk','malwrhunterteam','mesa_matt','Mesiagh','nao_sec','Racco42','reecdeep','shotgunner101','thlnk3r','VK_Intel']
-SEARCH_LIST = ['#dridex','#emotet','#icedid','#qakbot','#qbot','#trickbot']
+USERNAME_LIST = ['58_158_177_102','abuse_ch','ankit_anubhav','avman1995','bad_packets','Bank_Security','cobaltstrikebot','Cryptolaemus1','dubstard','executemalware','FewAtoms','ffforward','James_inthe_box','JAMESWT_MHT','Jan0fficial','JCyberSec_','JRoosen','Ledtech3','pollo290987','ps66uk','Max_Mal_','malwrhunterteam','mesa_matt','Mesiagh','nao_sec','Racco42','reecdeep','shotgunner101','thlnk3r','VK_Intel']
+SEARCH_LIST = ['#dridex','#emotet','#icedid','#qakbot','#qbot','#trickbot','#ursnif']
 
 SCRAPER_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.89 Safari/537.36',
@@ -74,7 +75,7 @@ def make_new_event(misp):
 
     event.info = event_title
     event.analysis = Analysis.completed
-    event.distribution = Distribution.your_organisation_only
+    event.distribution = MISP_DISTRIBUTION
     event.threat_level_id = ThreatLevel.low
 
     event.add_tag('Twitter')
@@ -374,6 +375,12 @@ def process_indicators(misp, indicator_list):
 
     if event:
         LOGGER.warning('Event already exists!')
+
+        if MISP_PUBLISH_EVENTS:
+            LOGGER.info('Reapplying distribution policy for event update...')
+            event['timestamp'] = int(time.time())
+            event['distribution'] = MISP_DISTRIBUTION
+            updated_event = misp.update_event(event, event_id=event['id'], metadata=True)
 
     else:
         event = make_new_event(misp)

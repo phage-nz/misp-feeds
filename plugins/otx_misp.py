@@ -28,13 +28,14 @@ LOGGER = logging.getLogger('otxmisp')
 logging.basicConfig(filename='misp_feeds.log', format='%(asctime)s %(name)s %(levelname)s: %(message)s', level=logging.INFO)
 coloredlogs.install(level='INFO')
 
-OTX_API_KEY = 'YOUR OTX KEY'
-OTX_USER_BLACKLIST = []
+OTX_API_KEY = 'YOUR API KEY'
+OTX_USER_BLACKLIST = ['david3','dm_lacia']
 OTX_USER_WHITELIST = []
-OTX_PULSE_BLACKLIST = []
+OTX_PULSE_BLACKLIST = ['602bc528f447d628d41494f2','5de8ad9a8b95247cfa55def7']
 
 MISP_TO_IDS = False
-MISP_PUBLISH_EVENTS = False
+MISP_PUBLISH_EVENTS = True
+MISP_DISTRIBUTION = Distribution.connected_communities
 
 HOURS_TO_CHECK = 7
 ATTRIBUTE_PROGRESS = True
@@ -81,7 +82,7 @@ def make_new_event(misp, pulse):
     event_date = timestamp.strftime('%Y-%m-%d')
     event.info = title
     event.analysis = Analysis.completed
-    event.distribution = Distribution.your_organisation_only
+    event.distribution = MISP_DISTRIBUTION
     event.threat_level_id = ThreatLevel.low
     event.add_tag('otx-author:{0}'.format(author))
 
@@ -100,7 +101,7 @@ def make_new_event(misp, pulse):
             if galaxy_tags:
                 for galaxy_tag in galaxy_tags:
                     LOGGER.info('Adding threat actor galaxy tag: "{0}"'.format(galaxy_tag))
-                    event.add_tag(galaxy_tab)
+                    event.add_tag(galaxy_tag)
 
             else:
                 event.add_tag(adversary)
@@ -195,6 +196,12 @@ def process_pulses(misp, pulses):
 
         if event:
             LOGGER.warning('Event already exists. Will only update attributes.')
+
+            if MISP_PUBLISH_EVENTS:
+                LOGGER.info('Reapplying distribution policy for event update...')
+                event['timestamp'] = int(time.time())
+                event['distribution'] = MISP_DISTRIBUTION
+                updated_event = misp.update_event(event, event_id=event['id'], metadata=True)
 
         else:
             event = make_new_event(misp, pulse)

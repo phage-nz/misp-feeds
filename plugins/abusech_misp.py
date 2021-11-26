@@ -28,6 +28,7 @@ PLUGIN_TIMES = ['hourly']
 MISP_EVENT_TITLE = 'Abuse.ch indicator feed'
 MISP_TO_IDS = False
 MISP_PUBLISH_EVENTS = False
+MISP_DISTRIBUTION = Distribution.your_organisation_only
 
 FEODOTRACKER_URL = 'https://feodotracker.abuse.ch/downloads/ipblocklist.csv'
 MALWAREBAZAAR_URL = 'https://bazaar.abuse.ch/export/csv/recent/'
@@ -60,7 +61,7 @@ def make_new_event(misp):
 
     event.info = event_title
     event.analysis = Analysis.completed
-    event.distribution = Distribution.your_organisation_only
+    event.distribution = MISP_DISTRIBUTION
     event.threat_level_id = ThreatLevel.low
 
     event.add_tag('abuse.ch')
@@ -300,6 +301,12 @@ def process_indicators(misp, indicator_list):
 
     if event:
         LOGGER.warning('Event already exists!')
+
+        if MISP_PUBLISH_EVENTS:
+            LOGGER.info('Reapplying distribution policy for event update...')
+            event['timestamp'] = int(time.time())
+            event['distribution'] = MISP_DISTRIBUTION
+            updated_event = misp.update_event(event, event_id=event['id'], metadata=True)
 
     else:
         event = make_new_event(misp)

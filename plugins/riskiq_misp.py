@@ -24,12 +24,13 @@ PLUGIN_ENABLED = True
 PLUGIN_TIMES = ['06:00','14:00','22:00']
 
 RISKIQ_URL = 'https://api.riskiq.net/pt/v2/'
-RISKIQ_USER = 'YOUR RISKIQ USER'
-RISKIQ_KEY = 'YOUR RISKIQ KEY'
+RISKIQ_USER = 'YOUR EMAIL'
+RISKIQ_KEY = 'YOUR API KEY'
 RISKIQ_TLP = 'white'
 
 MISP_TO_IDS = False
-MISP_PUBLISH_EVENTS = False
+MISP_PUBLISH_EVENTS = True
+MISP_DISTRIBUTION = Distribution.connected_communities
 
 HOURS_TO_CHECK = 9
 ATTRIBUTE_PROGRESS = True
@@ -69,7 +70,7 @@ def make_new_event(misp, article):
     event_date = timestamp.strftime('%Y-%m-%d')
     event.info = title
     event.analysis = Analysis.completed
-    event.distribution = Distribution.your_organisation_only
+    event.distribution = MISP_DISTRIBUTION
     event.threat_level_id = ThreatLevel.low
 
     if tags:
@@ -137,6 +138,12 @@ def process_articles(misp, articles):
 
         if event:
             LOGGER.warning('Event already exists. Will only update attributes.')
+
+            if MISP_PUBLISH_EVENTS:
+                LOGGER.info('Reapplying distribution policy for event update...')
+                event['timestamp'] = int(time.time())
+                event['distribution'] = MISP_DISTRIBUTION
+                updated_event = misp.update_event(event, event_id=event['id'], metadata=True)
 
         else:
             event = make_new_event(misp, article)
