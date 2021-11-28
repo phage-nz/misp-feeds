@@ -27,10 +27,11 @@ MISP_TO_IDS = False
 MISP_PUBLISH_EVENTS = True
 MISP_DISTRIBUTION = Distribution.connected_communities
 
-PHISHTANK_URL = 'http://data.phishtank.com/data/online-valid.json'
+PHISHTANK_URL = 'http://data.phishtank.com/data/YOUR APPLICATION KEY/online-valid.json'
 OPENPHISH_URL = 'https://openphish.com/feed.txt'
 URLSCAN_URL = 'https://urlscan.io/api/v1/search/'
 
+PHISHTANK_USER = 'YOUR USERNAME'
 OPENPHISH_HISTORY_FILE = 'openphish.history'
 URLSCAN_KEY = 'YOUR API KEY'
 URLSCAN_SEARCHES = [
@@ -74,11 +75,12 @@ def make_new_event(misp):
         return False
 
 def get_phishtank_list():
-    LOGGER.info('Fetching latest online URLs from Phishtank...')
+    LOGGER.info('Fetching latest online URLs from PhishTank...')
     indicator_list = []
 
     try:
-        response = requests.get(PHISHTANK_URL)
+        headers = {'User-Agent': 'phishtank/{0}'.format(PHISHTANK_USER)}
+        response = requests.get(PHISHTANK_URL, headers=headers)
 
         if response.status_code == 200:
             response_json = json.loads(response.text)
@@ -103,7 +105,7 @@ def get_phishtank_list():
                 indicator_list.append(FeedIndicator(comment, tags, 'url', url))
 
     except Exception as e:
-        LOGGER.error('Phishtank request error: {0}'.format(str(e)))
+        LOGGER.error('PhishTank request error: {0}'.format(str(e)))
 
     return indicator_list
 
