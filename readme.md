@@ -43,10 +43,13 @@ At the top of each plugin are three variables which determine its operation:
 - PLUGIN_ENABLED: Boolean setting to enable/disable the plugin. 
 - PLUGIN_TIMES: The times throughout the day to run the plugin. Also accepts 'hourly', which will run it on the hour every hour. 
 
+Most also have plugin-specific configurations that must also be made.
+
 Default plugins are as follows:
 - Abuse.ch: Pulls URLhaus, Feodo Tracker, MalwareBazaar and ThreatFox into a single event per day. Attributes are tagged according to the feed tags and/or classification. 
 - CleanMX: Virus and Phishing feeds are pulled into a single event per day. No tagging yet. 
 - OTX: Individual pulses form a separate events in MISP. OTX tags can be spammy so are ignored, but Adversary, Malware and ATT&CK techniques are used. Galaxy tags are attempted, and if no appropriate tag can be found, the feed supplied tag is used. 
+- Phishing: Pulls urlscan, PhishTank and OpenPhish listed URL's into a single event per day. urlscan and PhishTank attributes are tagged according to the targeted brands recorded by the source service. urlscan requires an API key and a list of JSON objects that describe the search query and whether to only accept results marked as malicious. A couple of samples are provided. 
 - RiskIQ: Individual articles form a separate events in MISP. The same method of tagging is employed as OTX. 
 - Twitter: Pulls IOC's found on Twitter into a single event per day. GitHub, PasteBin and GhostBin links are followed and also scraped. Attributes are tagged with the hashtags included in the Tweet and the same method as OTX. 
 - X-Force: Individual articles form a separate events in MISP. X-Force articles are not tagged, so the Title of the article is parsed to identify Galaxy tags that match Title keywords. 
