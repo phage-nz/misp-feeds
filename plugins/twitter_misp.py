@@ -11,7 +11,7 @@ from pymisp import MISPEvent, MISPAttribute, ThreatLevel, Distribution, Analysis
 from urllib.parse import urlparse
 
 import coloredlogs
-import iocextract
+import ioc_finder
 import logging
 import pytz
 import re
@@ -46,7 +46,7 @@ WAIT_SECONDS = 10
 THROTTLE_REQUESTS = True
 INCLUDE_DOMAINS = False
 
-USERNAME_LIST = ['58_158_177_102','abuse_ch','ankit_anubhav','avman1995','bad_packets','Bank_Security','cobaltstrikebot','Cryptolaemus1','dubstard','executemalware','FewAtoms','ffforward','James_inthe_box','JAMESWT_MHT','Jan0fficial','JCyberSec_','JRoosen','Ledtech3','pollo290987','ps66uk','Max_Mal_','malwrhunterteam','mesa_matt','Mesiagh','nao_sec','Racco42','reecdeep','shotgunner101','thlnk3r','VK_Intel']
+USERNAME_LIST = ['58_158_177_102','abuse_ch','ankit_anubhav','avman1995','bad_packets','Bank_Security','cobaltstrikebot','Cryptolaemus1','dubstard','executemalware','FewAtoms','ffforward','fr0s7_','James_inthe_box','JAMESWT_MHT','Jan0fficial','JCyberSec_','JRoosen','Ledtech3','pollo290987','pr0xylife','ps66uk','Max_Mal_','malwrhunterteam','mesa_matt','Mesiagh','nao_sec','Racco42','reecdeep','shotgunner101','thlnk3r','VK_Intel']
 SEARCH_LIST = ['#dridex','#emotet','#icedid','#qakbot','#qbot','#trickbot','#ursnif']
 
 SCRAPER_HEADERS = {
@@ -236,23 +236,28 @@ def extract_text_indicators(username, tweet_id, text, tags):
     tweet_url = 'https://twitter.com/{0}/status/{1}'.format(username, tweet_id)
 
     try:
-        for ip in iocextract.extract_ipv4s(text, refang=True):
+        ioc_dict = ioc_finder.find_iocs(text)
+        for ip in ioc_dict['ipv4s']:
             if is_valid_ip(ip):
                 indicator_list.append(TwitterIndicator(user_id, tweet_url, 'IPv4', ip, tags))
 
-        for hash in iocextract.extract_hashes(text):
-            hash_type = get_hash_type(hash)
+        for hash in ioc_dict['md5s']:
+            indicator_list.append(TwitterIndicator(user_id, tweet_url, 'FileHash-MD5', hash, tags))
 
-            if hash_type:
-                indicator_list.append(TwitterIndicator(user_id, tweet_url, hash_type, hash, tags))
+        for hash in ioc_dict['sha1s']:
+            indicator_list.append(TwitterIndicator(user_id, tweet_url, 'FileHash-SHA1', hash, tags))
 
-        for url in iocextract.extract_urls(text, refang=True):
+        for hash in ioc_dict['sha256s']:
+            indicator_list.append(TwitterIndicator(user_id, tweet_url, 'FileHash-SHA256', hash, tags))
+
+        for url in ioc_dict['urls']:
             url = apply_url_fixes(url)
 
             if is_valid_url(url):
                 indicator_list.append(TwitterIndicator(user_id, tweet_url, 'URL', url, tags))
 
-            elif INCLUDE_DOMAINS:
+        if INCLUDE_DOMAINS:
+            for domain in ioc_dict['domains']:
                 if is_valid_domain(url):
                     indicator_list.append(TwitterIndicator(user_id, tweet_url, 'HOST', url, tags))
 

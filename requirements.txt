@@ -1,6 +1,6 @@
 cfscrape
 coloredlogs
-iocextract
+ioc-finder
 OTXv2
 pymisp
 stix
