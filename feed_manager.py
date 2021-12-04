@@ -7,7 +7,6 @@
 # https://buildmedia.readthedocs.org/media/pdf/pymisp/latest/pymisp.pdf
 
 from config import *
-from export import export_run
 from helpers import disable_ssl_warnings, load_plugins, misp_admin_connection, misp_user_connection
 
 import coloredlogs
@@ -52,23 +51,32 @@ def start_worker():
     misp_admin = misp_admin_connection()
     misp_user = misp_user_connection()
 
-    feed_plugins = load_plugins()
+    plugin_list = load_plugins()
 
-    if feed_plugins:
-        enabled_plugins = [x for x in feed_plugins if x.PLUGIN_ENABLED == True]
+    if plugin_list:
+        enabled_feeds = [x for x in plugin_list if x.PLUGIN_ENABLED == True and x.PLUGIN_TYPE == 'feed']
+        enabled_exports = [x for x in plugin_list if x.PLUGIN_ENABLED == True and x.PLUGIN_TYPE == 'export']
 
-        LOGGER.info('Plugins enabled:')
+        if enabled_feeds:
+            LOGGER.info('Feeds enabled:')
 
-        for plugin in enabled_plugins:
-            LOGGER.info(plugin.PLUGIN_NAME)
+            for plugin in enabled_feeds:
+                LOGGER.info(plugin.PLUGIN_NAME)
 
-    LOGGER.info('Starting MISP feeds worker...')
+        if enabled_exports:
+            LOGGER.info('Exports enabled:')
+
+            for plugin in enabled_exports:
+                LOGGER.info(plugin.PLUGIN_NAME)
+
+    LOGGER.info('Starting worker...')
 
     while True:
         current_time = time.strftime('%H:%M')
+        current_minutes = time.strftime('%M')
 
-        if current_time.split(':')[1] == '00':
-            LOGGER.info('Beginning hourly feed run...')
+        if current_minutes == '00':
+            LOGGER.info('Beginning hourly system feed run...')
 
             for feed in misp_admin.feeds(pythonify=True):
                 if feed.id in HOURLY_FEEDS:
@@ -76,14 +84,7 @@ def start_worker():
                     LOGGER.info('Waiting a moment...')
                     time.sleep(2)
 
-            hourly_plugins = [x for x in enabled_plugins if 'hourly' in x.PLUGIN_TIMES]
-
-            if hourly_plugins:
-                for plugin in hourly_plugins:
-                    LOGGER.info('Beginning {0} plugin run...'.format(plugin.PLUGIN_NAME))
-                    plugin.plugin_run(misp_user)
-
-            LOGGER.info('Hourly feed run complete!')
+            LOGGER.info('Hourly system feed run complete!')
 
         if current_time in MISP_TIMES:
             LOGGER.info('Beginning MISP feed run...')
@@ -111,22 +112,32 @@ def start_worker():
 
             LOGGER.info('Text feed run complete!')
 
-        due_plugins = [x for x in enabled_plugins if current_time in x.PLUGIN_TIMES]
+        due_feeds = [x for x in enabled_feeds if current_time in x.PLUGIN_TIMES or current_minutes in x.PLUGIN_TIMES]
 
-        if due_plugins:
-            for plugin in due_plugins:
-                LOGGER.info('Beginning {0} plugin run...'.format(plugin.PLUGIN_NAME))
-                plugin.plugin_run(misp_user)
+        if due_feeds:
+            for feed in due_feeds:
+                LOGGER.info('Beginning {0} plugin run...'.format(feed.PLUGIN_NAME))
+                feed.plugin_run(misp_user)
 
-        if ENABLE_EXPORT:
-            if current_time.split(':')[1] == '00':
+        due_exports = [x for x in enabled_exports if current_time in x.PLUGIN_TIMES or current_minutes in x.PLUGIN_TIMES]
+
+        if due_exports:
+            if current_minutes == '00':
                 LOGGER.info('Beginning full export run...')
-                export_run(misp_user, start_fresh=True)
+
+                for export in due_exports:
+                    LOGGER.info('Beginning {0} plugin run...'.format(export.PLUGIN_NAME))
+                    export.plugin_run(misp_user, start_fresh=True)
+
                 LOGGER.info('Full export run complete!')
 
-            elif current_time.split(':')[1] in ['10','20','30','40','50']:
+            else:
                 LOGGER.info('Beginning partial export run...')
-                export_run(misp_user)
+
+                for export in due_exports:
+                    LOGGER.info('Beginning {0} plugin run...'.format(export.PLUGIN_NAME))
+                    export.plugin_run(misp_user, start_fresh=False)
+
                 LOGGER.info('Partial export run complete!')
 
         time.sleep(60)

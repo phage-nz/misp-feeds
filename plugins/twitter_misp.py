@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 
-# cfscrape requires NodeJS for JS challenge bypass:
-# apt install nodejs
-
 from cfscrape import create_scraper
 from config import *
 from datetime import datetime, timedelta
@@ -25,6 +22,7 @@ logging.basicConfig(filename='misp_feeds.log', format='%(asctime)s %(name)s %(le
 coloredlogs.install(level='INFO')
 
 PLUGIN_NAME = 'Twitter'
+PLUGIN_TYPE = 'feed'
 PLUGIN_ENABLED = True
 PLUGIN_TIMES = ['06:00', '12:00', '18:00', '00:00']
 
@@ -46,7 +44,7 @@ WAIT_SECONDS = 10
 THROTTLE_REQUESTS = True
 INCLUDE_DOMAINS = False
 
-USERNAME_LIST = ['58_158_177_102','abuse_ch','ankit_anubhav','avman1995','bad_packets','Bank_Security','cobaltstrikebot','Cryptolaemus1','dubstard','executemalware','FewAtoms','ffforward','fr0s7_','James_inthe_box','JAMESWT_MHT','Jan0fficial','JCyberSec_','JRoosen','Ledtech3','pollo290987','pr0xylife','ps66uk','Max_Mal_','malwrhunterteam','mesa_matt','Mesiagh','nao_sec','Racco42','reecdeep','shotgunner101','thlnk3r','VK_Intel']
+USERNAME_LIST = ['58_158_177_102','abuse_ch','ankit_anubhav','Arkbird_SOLG','avman1995','bad_packets','Bank_Security','Cryptolaemus1','drb_ra','dubstard','executemalware','FewAtoms','ffforward','fr0s7_','James_inthe_box','JAMESWT_MHT','Jan0fficial','JCyberSec_','JRoosen','Ledtech3','pollo290987','pr0xylife','ps66uk','Max_Mal_','malwrhunterteam','mesa_matt','Mesiagh','nao_sec','Racco42','reecdeep','shotgunner101','thlnk3r','VK_Intel']
 SEARCH_LIST = ['#dridex','#emotet','#icedid','#qakbot','#qbot','#trickbot','#ursnif']
 
 SCRAPER_HEADERS = {

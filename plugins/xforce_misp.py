@@ -25,6 +25,7 @@ logging.basicConfig(filename='misp_feeds.log', format='%(asctime)s %(name)s %(le
 coloredlogs.install(level='INFO')
 
 PLUGIN_NAME = 'X-Force'
+PLUGIN_TYPE = 'feed'
 PLUGIN_ENABLED = True
 PLUGIN_TIMES = ['06:00', '14:00', '22:00']
 

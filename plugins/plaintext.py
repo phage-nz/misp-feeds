@@ -3,7 +3,6 @@
 from config import *
 from datetime import datetime, timedelta
 from helpers import misp_user_connection
-from pymisp import PyMISP
 
 import argparse
 import coloredlogs
@@ -13,14 +12,29 @@ import sys
 import time
 import urllib3
 
-LOGGER = logging.getLogger('mispexport')
+LOGGER = logging.getLogger('plaintext')
 logging.basicConfig(filename='misp_feeds.log', format='%(asctime)s %(name)s %(levelname)s: %(message)s', level=logging.INFO)
 coloredlogs.install(level='INFO')
+
+PLUGIN_NAME = 'Plaintext'
+PLUGIN_TYPE = 'export'
+PLUGIN_ENABLED = True
+PLUGIN_TIMES = ['00','15','30','45']
+
+DEFAULT_FULL = False
+PARTIAL_MINUTES = 20
+EXPORT_DAYS = 90
+EXPORT_PAGE_SIZE = 5000
+EXPORT_TAGS = ['tlp:white','tlp:green','tlp:amber','osint:source-type="block-or-filter-list"']
+EXPORT_TYPES = ['domain','email-src','email-subject','hostname','url','ip-dst','ip-src','sha256']
+EXPORT_MERGE_HOSTNAME = True
+EXPORT_PATH = '/var/www/MISP/app/webroot/export'
+EXPORT_KEY = 'RANDOM KEY'
 
 def disable_ssl_warnings():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def export_run(misp, start_fresh=False):
+def plugin_run(misp, start_fresh=DEFAULT_FULL):
     LOGGER.info('Loading custom whitelist...')
 
     with open(WHITELIST_FILE, mode='r', encoding='utf-8') as in_file:
@@ -55,7 +69,7 @@ def export_run(misp, start_fresh=False):
 
         else:
             LOGGER.info('Performing partial update.')
-            date_from = (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')
+            date_from = (datetime.utcnow() - timedelta(minutes=PARTIAL_MINUTES)).strftime('%Y-%m-%d')
 
         attr_list = []
 
@@ -114,4 +128,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    export_run(misp, start_fresh=args.full)
+    plugin_run(misp, start_fresh=args.full)

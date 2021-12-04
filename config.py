@@ -9,15 +9,6 @@ MISP_TIMES = ['06:00', '18:00']
 TEXT_TIMES = ['06:00', '12:00', '18:00', '00:00']
 HOURLY_FEEDS = []
 
-ENABLE_EXPORT = True
-EXPORT_DAYS = 90
-EXPORT_PAGE_SIZE = 5000
-EXPORT_TAGS = ['tlp:white','tlp:green','tlp:amber','osint:source-type="block-or-filter-list"']
-EXPORT_TYPES = ['domain','email-src','email-subject','hostname','url','ip-dst','ip-src','sha256']
-EXPORT_MERGE_HOSTNAME = True
-EXPORT_PATH = '/var/www/MISP/app/webroot/export'
-EXPORT_KEY = 'RANDOM ALPHANUMERIC STRING'
-
 WHITELIST_FILE = 'whitelist.txt'
 
 IP_BLACKLIST = ['0.0.0.0', '127.0.0.1', '127.0.1.1', '192.168.1.']

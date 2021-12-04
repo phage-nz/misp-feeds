@@ -22,12 +22,13 @@ logging.basicConfig(filename='misp_feeds.log', format='%(asctime)s %(name)s %(le
 coloredlogs.install(level='INFO')
 
 PLUGIN_NAME = 'Abuse.CH'
+PLUGIN_TYPE = 'feed'
 PLUGIN_ENABLED = True
-PLUGIN_TIMES = ['hourly']
+PLUGIN_TIMES = ['00']
 
 MISP_EVENT_TITLE = 'Abuse.ch indicator feed'
 MISP_TO_IDS = False
-MISP_PUBLISH_EVENTS = False
+MISP_PUBLISH_EVENTS = True
 MISP_DISTRIBUTION = Distribution.your_organisation_only
 
 FEODOTRACKER_URL = 'https://feodotracker.abuse.ch/downloads/ipblocklist.csv'

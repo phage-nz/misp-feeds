@@ -21,6 +21,7 @@ import sys
 import time
 
 PLUGIN_NAME = 'OTX'
+PLUGIN_TYPE = 'feed'
 PLUGIN_ENABLED = True
 PLUGIN_TIMES = ['08:00', '14:00', '20:00', '02:00']
 
