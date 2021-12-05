@@ -58,6 +58,7 @@ def make_new_event(misp, article):
     title = article['title']
     description = article['summary']
     tags = article['tags']
+    attack_tags = [x for x in article['indicators'] if x['type'] == 'att&ck']
     tlp = RISKIQ_TLP.lower()
     reference = article['link']
 
@@ -88,6 +89,15 @@ def make_new_event(misp, article):
 
             else:
                 event.add_tag(tag)
+
+    if attack_tags:
+        for attack_id in attack_tags[0]['values']:
+            galaxy_tags = get_tags(misp, '{0}"'.format(attack_id), 'endswith')
+
+            if galaxy_tags:
+                for galaxy_tag in galaxy_tags:
+                    LOGGER.info('Adding MITRE ATT&CK galaxy tag: "{0}"'.format(galaxy_tag))
+                    event.add_tag(galaxy_tag)
 
     if description:
         LOGGER.info('Adding external analysis attribute.')
@@ -229,6 +239,10 @@ def process_articles(misp, articles):
                 elif indicator_type == 'certificate_sha1':
                     attribute_category = 'Network activity'
                     attribute_type = 'x509-fingerprint-sha1'
+
+                elif indicator_type == 'att&ck':
+                    LOGGER.info('ATT&CK tag added at event creation time.')
+                    continue
 
                 else:
                     LOGGER.warning('Unsupported indicator type: {0}'.format(indicator_type))
